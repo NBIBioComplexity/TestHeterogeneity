@@ -4,14 +4,12 @@ import matplotlib.ticker as mtick
 
 import datetime as dt
 import numpy as np
-import pandas as pd
 import cycler
 import scipy.stats as stats
 import scipy.integrate as integrate
 import scipy.optimize as optimize
 from scipy.interpolate import interp1d
 import math
-from tqdm import tqdm
 import time
 
 label_fz = 16
@@ -158,14 +156,15 @@ col2 = cm(col0 + col_multipliers[1]*dcol)
 col3 = cm(col0 + col_multipliers[2]*dcol)
 
 cols = [col3, col2]
+markers = ["*", "d"]
 
 ### Expected detection time for spectrum of parameters (sensitivity) ###
 fig, ax = plt.subplots(figsize=(5,3.5))
 for i, j in enumerate(true_rates_tmp):
     z = np.vectorize(reduction)(x, tpr_set=j, tnr_set=tnr_def, d=delay)
-    ax.plot(x[:win_max], z[:win_max], label=f"{sens_lbl}={j:.1f}, d=0.2", color=cols[i], linestyle="--", alpha=0.5)
+    ax.plot(x[:win_max], z[:win_max], label=f"{sens_lbl}={j:.1f}, d=0.2", color=cols[i], linestyle="--", marker=markers[i], markevery=50, alpha=0.5)
     y = np.vectorize(reduction)(x, tpr_set=j, tnr_set=tnr_def, d=0)
-    ax.plot(x[:win_max], y[:win_max], label=f"{sens_lbl}={j:.1f}, d=0.0", color=cols[i])
+    ax.plot(x[:win_max], y[:win_max], label=f"{sens_lbl}={j:.1f}, d=0.0", color=cols[i], marker=markers[i], markevery=50)
 
 ax.axhline(1-delay, color=col1, alpha=0.3) #label=f"Saturation at delay {delay}$T_{{I}}$", 
 
@@ -196,12 +195,17 @@ figuresave("reduction_delay")
 fig, ax = plt.subplots(figsize=(5,3.5))
 for i, j in enumerate(true_rates_tmp):
     delay=0
+    sens_loc = j
+    if sens_loc < 0.99:
+        marker="*"
+    else:
+        marker="d"
     y = np.vectorize(reduction)(x, tpr_set=j, tnr_set=tnr_def, d=delay)
-    ax.plot(x[:win_max-1], np.diff(y[:win_max])/dx, label=f"{sens_lbl}={j:.1f}, d={delay:.1f}", color=cols[i], alpha=0.4)#, label=f"\frac{{d}}{{d {frq_lbl}}}\\rho({freq_lbl})")
+    ax.plot(x[:win_max-1], np.diff(y[:win_max])/dx, label=f"{sens_lbl}={j:.1f}, d={delay:.1f}", color=cols[i], alpha=0.4, marker=marker, markevery=50)#, label=f"\frac{{d}}{{d {frq_lbl}}}\\rho({freq_lbl})")
     
     delay=0.2
     z = np.vectorize(reduction)(x, tpr_set=j, tnr_set=tnr_def, d=delay)
-    ax.plot(x[:win_max-1], np.diff(z[:win_max])/dx, label=f"{sens_lbl}={j:.1f}, d={delay:.1f}", color=cols[i], linestyle=":")#, label=f"\frac{{d}}{{d {frq_lbl}}}\\rho({freq_lbl})")
+    ax.plot(x[:win_max-1], np.diff(z[:win_max])/dx, label=f"{sens_lbl}={j:.1f}, d={delay:.1f}", color=cols[i], linestyle=":", marker=marker, markevery=50)#, label=f"\frac{{d}}{{d {frq_lbl}}}\\rho({freq_lbl})")
     
 ax.set_ylabel("Derivative of reduction $\\frac{{d \\rho}}{{df}}$")
 ax.legend()
